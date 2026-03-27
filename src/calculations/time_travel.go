@@ -43,15 +43,13 @@ var (
 	}
 )
 
-func ConvertHoursToSeconds(t float64) float64 {
-	return t * 3600
+var transportModes = map[string]TransportMode{
+	"walking":          Walking,
+	"driving":          Driving,
+	"public_transport": PublicTransport,
 }
 
-func ConvertMinutesToSeconds(t float64) float64 {
-	return t * 60
-}
-
-func TravelTime(tm string, d float64) (float64, error) {
+func TravelTime(mode string, d float64) (float64, error) {
 	if d < MinimumDistance {
 		return 0, fmt.Errorf("distance must be greater than %d: %w", MinimumDistance, ErrDistanceTooSmall)
 	}
@@ -60,17 +58,13 @@ func TravelTime(tm string, d float64) (float64, error) {
 		return 0, fmt.Errorf("distance must be less than %d: %w", MaximumDistance, ErrDistanceTooLarge)
 	}
 
-	if tm == "walking" {
-		return ConvertHoursToSeconds(d / 5), nil
+	tm, ok := transportModes[mode]
+	if !ok {
+		return 0, ErrInvalidTransportMode
 	}
 
-	if tm == "driving" {
-		return ConvertHoursToSeconds(d / 30), nil
-	}
+	hours := d / tm.SpeedKmH
+	seconds := hours * 3600
 
-	if tm == "publicTransport" {
-		return ConvertHoursToSeconds(d/25) + ConvertMinutesToSeconds(8), nil
-	}
-
-	return 0, errors.New("invalid transport mode")
+	return seconds + tm.OverheadTime.Seconds(), nil
 }
