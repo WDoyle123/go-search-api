@@ -11,6 +11,10 @@ type Coordinate struct {
 	longitude float64
 }
 
+func NewCoordinate(lat, lon float64) Coordinate {
+	return Coordinate{latitude: lat, longitude: lon}
+}
+
 func convertToRadians(d float64) float64 {
 	return d * (math.Pi / 180)
 }
